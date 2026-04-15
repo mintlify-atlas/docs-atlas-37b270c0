@@ -1,0 +1,167 @@
+---
+title: "Connect ZLS to VS Code, Neovim, Helix, Zed, and more"
+description: "Configure VS Code, Neovim, Helix, Zed, Emacs, and Sublime Text to use ZLS. Any LSP-compatible editor can connect to ZLS using the zls binary."
+---
+
+Once you have ZLS installed and on your `PATH`, you need to tell your editor where to find it and how to start it. Most editors discover ZLS automatically once the binary is on your `PATH`. Others need a small configuration snippet. Pick your editor below.
+
+<Note>
+  Any editor with LSP support can use ZLS. Point your editor's LSP client at the `zls` binary and it will handle the rest over stdin/stdout.
+</Note>
+
+<Tabs>
+  <Tab title="VS Code">
+    The easiest way to use ZLS in VS Code is through the **Zig Language** extension, which bundles ZLS management and will download or update ZLS automatically.
+
+    <Steps>
+      <Step title="Install the extension">
+        Open the Extensions panel (`Ctrl+Shift+X`) and search for **Zig Language** (publisher: `ziglang`). Install it.
+      </Step>
+      <Step title="Let the extension manage ZLS">
+        By default the extension downloads and manages ZLS for you. Reload VS Code after installation and open a `.zig` file — ZLS will start automatically.
+      </Step>
+      <Step title="Point to a custom ZLS binary (optional)">
+        If you want to use your own build, set the following in your VS Code settings (`settings.json`):
+
+        ```json
+        {
+          "zig.zls.path": "/path/to/zls"
+        }
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+      Alternatively, install the **ZLS for VSCode** extension if you prefer to manage ZLS yourself without the bundled download logic.
+    </Tip>
+  </Tab>
+
+  <Tab title="Neovim">
+    The recommended way to use ZLS in Neovim is with [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig), which includes a built-in `zls` server definition.
+
+    <Steps>
+      <Step title="Install nvim-lspconfig">
+        Add `neovim/nvim-lspconfig` with your plugin manager (lazy.nvim, packer, etc.) and run your install command.
+      </Step>
+      <Step title="Configure the zls server">
+        Add the following to your Neovim config (`init.lua` or a dedicated LSP config file):
+
+        ```lua
+        require('lspconfig').zls.setup({})
+        ```
+
+        `nvim-lspconfig` will look for `zls` on your `PATH`. You can override the binary path if needed:
+
+        ```lua
+        require('lspconfig').zls.setup({
+          cmd = { '/path/to/zls' },
+        })
+        ```
+      </Step>
+    </Steps>
+
+    <Tip>
+      The [Zig.nvim](https://github.com/ziglang/zig.nvim) plugin provides Zig-specific Neovim integration and can also manage ZLS startup for you.
+    </Tip>
+  </Tab>
+
+  <Tab title="Helix">
+    Helix has built-in ZLS support. If `zls` is on your `PATH`, Helix will start it automatically when you open a `.zig` file — no additional configuration required.
+
+    To override the command or pass flags, add the following to your `~/.config/helix/languages.toml`:
+
+    ```toml
+    [[language]]
+    name = "zig"
+    language-servers = ["zls"]
+
+    [language-server.zls]
+    command = "zls"
+    ```
+
+    Reload Helix and open a `.zig` file to verify the server starts.
+
+    <Note>
+      Check `~/.config/helix/languages.toml` for any existing `[language-server.zls]` entry before adding a new one to avoid conflicts.
+    </Note>
+  </Tab>
+
+  <Tab title="Zed">
+    Zed has first-class Zig support through its extension marketplace.
+
+    <Steps>
+      <Step title="Install the Zig extension">
+        Open the Extensions panel (`Cmd+Shift+X` on macOS, `Ctrl+Shift+X` on Linux) and search for **Zig**. Install the official Zig extension.
+      </Step>
+      <Step title="Open a Zig project">
+        The extension will auto-detect `zls` on your `PATH` and start it when you open a `.zig` file. No additional configuration is needed.
+      </Step>
+    </Steps>
+  </Tab>
+
+  <Tab title="Emacs">
+    Emacs supports ZLS through either `lsp-mode` or the built-in `eglot` LSP client.
+
+    **Using eglot (built-in, Emacs 29+)**
+
+    ```emacs-lisp
+    (add-hook 'zig-mode-hook #'eglot-ensure)
+    ```
+
+    Eglot looks for `zls` on your `PATH` automatically when `zig-mode` is active.
+
+    **Using lsp-mode**
+
+    ```emacs-lisp
+    (add-hook 'zig-mode-hook #'lsp-deferred)
+    ```
+
+    `lsp-mode` includes a built-in ZLS client definition and will find the `zls` binary on your `PATH`. Install the [zig-mode](https://github.com/ziglang/zig-mode) package for syntax highlighting and to trigger the LSP hook.
+
+    <Tip>
+      To use a specific ZLS binary with `eglot`, customize `eglot-server-programs`:
+
+      ```emacs-lisp
+      (add-to-list 'eglot-server-programs
+                   '(zig-mode . ("/path/to/zls")))
+      ```
+    </Tip>
+  </Tab>
+
+  <Tab title="Sublime Text">
+    Use the [LSP](https://packagecontrol.io/packages/LSP) package from Package Control to add ZLS to Sublime Text.
+
+    <Steps>
+      <Step title="Install LSP and LSP-zig">
+        Open the Command Palette (`Ctrl+Shift+P`), run **Package Control: Install Package**, and install both **LSP** and **LSP-zig**.
+      </Step>
+      <Step title="Configure the ZLS command">
+        If `zls` is on your `PATH`, LSP-zig will find it automatically. To point to a custom binary, open **Preferences > Package Settings > LSP > Settings** and add:
+
+        ```json
+        {
+          "clients": {
+            "zls": {
+              "enabled": true,
+              "command": ["/path/to/zls"]
+            }
+          }
+        }
+        ```
+      </Step>
+      <Step title="Open a Zig file to verify">
+        Open or create a `.zig` file. You should see the LSP status indicator in the status bar and completions become available.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Using ZLS with any other LSP-compatible editor
+
+If your editor is not listed above but supports LSP, you can still use ZLS. Configure your editor's LSP client to:
+
+- **Command:** `zls` (or the full path to the binary)
+- **Transport:** stdio (stdin/stdout)
+- **File types / languages:** `zig`
+
+Refer to your editor's LSP documentation for the exact configuration format. ZLS requires no special server-side initialization beyond the standard LSP handshake.

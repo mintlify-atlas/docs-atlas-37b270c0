@@ -1,0 +1,131 @@
+---
+title: "Customize ZLS behavior using a zls.json config file"
+description: "ZLS reads settings from a zls.json file. Learn where to place it, what options are available, and how to point ZLS at a custom location."
+---
+
+ZLS reads its configuration from a `zls.json` file. You can use it to enable or disable features, tune performance, and override paths to the Zig toolchain. Without a config file ZLS runs with sensible defaults, so the file is optional.
+
+## Where ZLS looks for zls.json
+
+ZLS searches for `zls.json` in your local config directory first, then falls back to the global config directory. Run `zls env` to see the exact paths on your system:
+
+```bash
+zls env
+```
+
+The output is a JSON object with the fields `local_config_dir`, `global_config_dir`, and `config_file` (the path of the file ZLS actually loaded, or `null` if none was found):
+
+```json
+{
+  "version": "0.14.0",
+  "global_cache_dir": "/home/user/.cache/zls",
+  "global_config_dir": "/home/user/.config",
+  "local_config_dir": "/home/user/.local/share",
+  "config_file": "/home/user/.config/zls.json",
+  "log_file": "/home/user/.cache/zls/zls.log"
+}
+```
+
+Place `zls.json` in either of those directories. ZLS picks up changes the next time it starts.
+
+### Custom config path
+
+Pass `--config-path` to point ZLS at a specific file, regardless of the default search locations:
+
+```bash
+zls --config-path /path/to/my/zls.json
+```
+
+This is useful when you want per-project configuration or want to keep the file inside your repository.
+
+## Basic example
+
+```json
+{
+  "enable_snippets": true,
+  "enable_build_on_save": true,
+  "semantic_tokens": "full",
+  "inlay_hints_show_variable_type_hints": true
+}
+```
+
+All fields are optional. Omitted fields use their default values.
+
+## Configuration options
+
+### Completions
+
+| Option | Default | Description |
+|---|---|---|
+| `enable_snippets` | `true` | Enable snippet completions when the client supports them |
+| `enable_argument_placeholders` | `true` | Enable function argument placeholder completions |
+| `completion_label_details` | `true` | Show the function signature in completion results |
+
+### Diagnostics
+
+| Option | Default | Description |
+|---|---|---|
+| `enable_build_on_save` | `null` (auto) | Enable build-on-save diagnostics. Auto-enabled when `build.zig` has a `check` step |
+| `build_on_save_args` | `[]` | Extra arguments passed to `zig build` during build-on-save |
+| `warn_style` | `false` | Enable warnings for Zig style guideline mismatches |
+| `highlight_global_var_declarations` | `false` | Highlight mutable global variable declarations |
+| `prefer_ast_check_as_child_process` | `true` | Use `zig ast-check` instead of the built-in checker |
+
+### Inlay hints
+
+| Option | Default | Description |
+|---|---|---|
+| `inlay_hints_show_variable_type_hints` | `true` | Show inlay hints for variable types |
+| `inlay_hints_show_struct_literal_field_type` | `true` | Show inlay hints for fields in struct and union literals |
+| `inlay_hints_show_parameter_name` | `true` | Show inlay hints for parameter names |
+| `inlay_hints_show_builtin` | `true` | Show inlay hints for builtin functions |
+| `inlay_hints_exclude_single_argument` | `true` | Hide inlay hints for single-argument calls |
+| `inlay_hints_hide_redundant_param_names` | `false` | Hide hints when param name matches the argument identifier |
+| `inlay_hints_hide_redundant_param_names_last_token` | `false` | Hide hints when param name matches the last token of the argument |
+
+### Semantic tokens
+
+`semantic_tokens` controls how much semantic highlighting ZLS provides:
+
+```json
+{
+  "semantic_tokens": "full"
+}
+```
+
+| Value | Description |
+|---|---|
+| `"full"` (default) | All semantic token information |
+| `"partial"` | Only tokens that require semantic analysis; faster |
+| `"none"` | No semantic tokens |
+
+### Paths
+
+Override the Zig toolchain paths when the defaults are not correct for your setup:
+
+| Option | Default | Description |
+|---|---|---|
+| `zig_exe_path` | `null` | Path to the `zig` executable. Looked up in `PATH` when unset |
+| `zig_lib_path` | `null` | Path to the Zig standard library. Resolved from `zig_exe_path` when unset |
+| `builtin_path` | `null` | Path to the `builtin` module. Resolved automatically when unset |
+| `build_runner_path` | `null` | Path to a custom build runner for resolving build system information |
+| `global_cache_path` | `null` | Directory used as Zig's cache. Defaults to `<cache>/zls` |
+
+Example — pin ZLS to a specific Zig installation:
+
+```json
+{
+  "zig_exe_path": "/home/user/zig-linux-x86_64-0.14.0/zig"
+}
+```
+
+### Other options
+
+| Option | Default | Description |
+|---|---|---|
+| `skip_std_references` | `false` | Skip the standard library when searching for references. Speeds up lookup in large codebases |
+| `force_autofix` | `false` | Work around editors that do not support `source.fixall` code actions on save |
+
+<Tip>
+For the full list of options with types and defaults, see the [configuration reference](/reference/configuration).
+</Tip>

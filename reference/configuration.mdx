@@ -1,0 +1,120 @@
+---
+title: "ZLS configuration options: complete reference guide"
+description: "Every ZLS configuration option with its type, default, and description: completions, diagnostics, semantic tokens, inlay hints, code actions, and paths."
+---
+
+ZLS reads its configuration from a `zls.json` file at startup. Every option listed here can be set as a top-level key in that file. See [zls.json format](/reference/zls-json) for details on file location and syntax.
+
+## Completions
+
+<ParamField body="enable_snippets" type="boolean" default="true">
+  Enables snippet completions when the client also supports them. When enabled, function calls insert tab-stop placeholders for each argument.
+</ParamField>
+
+<ParamField body="enable_argument_placeholders" type="boolean" default="true">
+  Whether to enable function argument placeholder completions. When enabled, completing a function call inserts named placeholders for each parameter.
+</ParamField>
+
+<ParamField body="completion_label_details" type="boolean" default="true">
+  Whether to show the function signature in completion results. May improve readability in some editors when disabled.
+</ParamField>
+
+## Diagnostics
+
+<ParamField body="enable_build_on_save" type="boolean | null" default="null">
+  Whether to enable build-on-save diagnostics. When set to `null` (the default), ZLS automatically enables this feature if your `build.zig` declares a `check` step.
+
+  See the [Build-On-Save guide](/guides/build-on-save) for setup instructions.
+</ParamField>
+
+<ParamField body="build_on_save_args" type="string[]" default="[]">
+  Arguments to pass to `zig build` when running build-on-save diagnostics. If your `build.zig` declares a `check` step, ZLS uses that step by default; otherwise it falls back to the `install` step.
+</ParamField>
+
+<ParamField body="prefer_ast_check_as_child_process" type="boolean" default="true">
+  Favor using `zig ast-check` as a child process instead of the builtin AST checker. The external process is generally more accurate and tracks the Zig compiler's behavior.
+</ParamField>
+
+<ParamField body="warn_style" type="boolean" default="false">
+  Enables warnings for style guideline mismatches, such as non-standard naming conventions.
+</ParamField>
+
+<ParamField body="highlight_global_var_declarations" type="boolean" default="false">
+  Whether to highlight global `var` declarations. Useful for enforcing the preference for `const` at module scope.
+</ParamField>
+
+## Semantic tokens
+
+<ParamField body="semantic_tokens" type="string" default="full">
+  Controls the level of semantic token information ZLS provides. Accepted values:
+
+  - `"none"` — disables semantic tokens entirely.
+  - `"partial"` — only includes tokens that require semantic analysis (faster).
+  - `"full"` — includes all semantic token information.
+</ParamField>
+
+## Inlay hints
+
+<ParamField body="inlay_hints_show_variable_type_hints" type="boolean" default="true">
+  Enable inlay hints that show the inferred type of variables where no explicit type annotation is written.
+</ParamField>
+
+<ParamField body="inlay_hints_show_struct_literal_field_type" type="boolean" default="true">
+  Enable inlay hints for field types in struct and union literals.
+</ParamField>
+
+<ParamField body="inlay_hints_show_parameter_name" type="boolean" default="true">
+  Enable inlay hints that show the parameter name at each call site.
+</ParamField>
+
+<ParamField body="inlay_hints_show_builtin" type="boolean" default="true">
+  Enable inlay hints for Zig builtin function parameters (e.g., `@intCast`, `@ptrCast`).
+</ParamField>
+
+<ParamField body="inlay_hints_exclude_single_argument" type="boolean" default="true">
+  Suppress inlay hints for function calls that have only a single argument. Reduces visual noise in simple call sites.
+</ParamField>
+
+<ParamField body="inlay_hints_hide_redundant_param_names" type="boolean" default="false">
+  Hide inlay hints when the parameter name matches the argument identifier exactly (e.g., `foo: foo`).
+</ParamField>
+
+<ParamField body="inlay_hints_hide_redundant_param_names_last_token" type="boolean" default="false">
+  Hide inlay hints when the parameter name matches the last token of the argument expression (e.g., `foo: bar.foo` or `foo: &foo`).
+</ParamField>
+
+## Code actions
+
+<ParamField body="force_autofix" type="boolean" default="false">
+  Work around editors that do not support `source.fixAll` code actions on save. Enabling this option causes ZLS to apply all available fixes automatically, but may deliver a substandard experience compared to native editor support.
+
+  <Note>Check the [editor setup guide](/editor-setup) to see whether your editor natively supports `source.fixAll` before enabling this option.</Note>
+</ParamField>
+
+## References
+
+<ParamField body="skip_std_references" type="boolean" default="false">
+  Skip searching for references in the Zig standard library. This improves lookup speed for symbols in your own code. Go-to-definition and rename still work normally.
+</ParamField>
+
+## Paths
+
+<ParamField body="zig_exe_path" type="string | null" default="null">
+  Path to the `zig` executable (the file, not the directory). When unset, ZLS searches for `zig` in your `PATH`. Example: `/usr/local/bin/zig`.
+</ParamField>
+
+<ParamField body="zig_lib_path" type="string | null" default="null">
+  Override the Zig library path. When unset, ZLS resolves this automatically from `zig_exe_path`.
+</ParamField>
+
+<ParamField body="builtin_path" type="string | null" default="null">
+  Override the path to the `builtin` module. Automatically resolved when unset.
+</ParamField>
+
+<ParamField body="build_runner_path" type="string | null" default="null">
+  Specify a custom build runner for resolving build system information. Uses the bundled build runner when unset.
+</ParamField>
+
+<ParamField body="global_cache_path" type="string | null" default="null">
+  Path to a directory used as ZLS's cache. Defaults to `{KnownFolders.Cache}/zls` when unset.
+</ParamField>

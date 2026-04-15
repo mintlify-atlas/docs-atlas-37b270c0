@@ -1,0 +1,108 @@
+---
+title: "Inlay hints: inline type and parameter info in ZLS"
+description: "ZLS shows inline virtual type annotations and parameter name labels in your editor without modifying source, powered by Zig type inference."
+---
+
+Inlay hints are virtual text your editor renders directly in the source code. They do not modify the file — they are overlaid by the editor and disappear when you dismiss them. ZLS uses inlay hints to surface type information that Zig's type inference would otherwise leave implicit, and to label argument positions at call sites.
+
+## Variable type hints
+
+```json
+{
+  "inlay_hints_show_variable_type_hints": true
+}
+```
+
+When `inlay_hints_show_variable_type_hints` is `true` (the default), ZLS appends the inferred type after the variable name for declarations that have no explicit type annotation:
+
+```zig
+const items = std.ArrayList(u8).init(allocator);
+//           ^ : std.ArrayList(u8)
+
+if (map.get(key)) |value| {
+//                  ^ : *Entry
+```
+
+Type hints appear on:
+- `const` and `var` declarations without an explicit type
+- `if`, `while`, and `for` capture variables
+- `catch` error capture variables
+- `switch` case payload captures
+- Destructure assignments
+
+## Struct literal field type hints
+
+```json
+{
+  "inlay_hints_show_struct_literal_field_type": true
+}
+```
+
+When `inlay_hints_show_struct_literal_field_type` is `true` (the default), ZLS annotates field names in struct and union literals with the expected field type:
+
+```zig
+const config: Config = .{
+    .timeout = 30,
+    // ^ : u32
+    .name = "server",
+    // ^ : []const u8
+};
+```
+
+## Parameter name hints
+
+```json
+{
+  "inlay_hints_show_parameter_name": true
+}
+```
+
+When `inlay_hints_show_parameter_name` is `true` (the default), ZLS labels each argument at a call site with the matching parameter name:
+
+```zig
+std.mem.copyForwards(u8, dest, source);
+//                   ^   ^     ^
+//                   T:  dest: source:
+```
+
+The label appears before each argument with a colon and a space. Hovering the label shows the full parameter type.
+
+### Filtering parameter hints
+
+Two options reduce noise by hiding hints when the label would be redundant:
+
+```json
+{
+  "inlay_hints_exclude_single_argument": true,
+  "inlay_hints_hide_redundant_param_names": false,
+  "inlay_hints_hide_redundant_param_names_last_token": false
+}
+```
+
+| Option | Default | Behavior |
+|---|---|---|
+| `inlay_hints_exclude_single_argument` | `true` | Hides parameter hints for calls with exactly one argument |
+| `inlay_hints_hide_redundant_param_names` | `false` | Hides the hint when the parameter name exactly matches the argument identifier (e.g. `foo: foo`) |
+| `inlay_hints_hide_redundant_param_names_last_token` | `false` | Hides the hint when the parameter name matches the *last token* of the argument expression (e.g. `foo: bar.foo` or `foo: &foo`) |
+
+## Builtin function hints
+
+```json
+{
+  "inlay_hints_show_builtin": true
+}
+```
+
+When `inlay_hints_show_builtin` is `true` (the default) and `inlay_hints_show_parameter_name` is also `true`, ZLS labels arguments to builtin functions with their parameter names:
+
+```zig
+@memcpy(dest, source);
+//      ^     ^
+//      dest: source:
+```
+
+ZLS excludes builtins whose parameter names carry no meaningful information — for example `@bitCast`, `@intCast`, `@sizeOf`, and `@sqrt` — to avoid cluttering call sites where the argument is self-evident from the builtin name.
+
+<Note>
+Builtin hints require both `inlay_hints_show_parameter_name` and `inlay_hints_show_builtin` to be `true`. Setting either to `false` disables builtin hints.
+</Note>

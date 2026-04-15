@@ -1,0 +1,71 @@
+---
+title: "Autocompletion, snippets, and signature help in ZLS"
+description: "ZLS provides intelligent autocompletion for Zig code, including variables, functions, struct fields, enum variants, builtins, and keywords."
+---
+
+ZLS responds to completion requests by analyzing the Zig type system, resolving declarations, and returning ranked completion items. Completions work for local variables, global declarations, struct fields, enum members, methods, error set members, and builtin functions like `@import` and `@This`.
+
+## What ZLS completes
+
+ZLS covers the following completion contexts:
+
+- **Variables and functions** — all symbols visible at the current scope, including imported modules
+- **Field access** — struct fields, union fields, and namespace members after a `.`
+- **Methods** — functions whose first parameter matches the receiver type
+- **Enum variants and enum literals** — inferred from the expected type at the cursor position
+- **Error set members** — after `error.`
+- **Builtins** — all `@builtin` functions with documentation and parameter signatures
+- **Keywords and primitives** — `const`, `var`, `fn`, `true`, `null`, `u8`, `i32`, etc.
+- **Import paths** — file names and module names inside `@import("...")`, `@embedFile("...")`, and `@cInclude("...")`
+- **Snippet templates** — common top-level constructs like `pub fn main() !void { ... }`
+
+Completion items are sorted so that struct fields and enum members appear before methods, functions, variables, snippets, and keywords, in that order. Deprecated symbols (those that resolve to a `@compileError`) are sorted last and marked with a strikethrough where the editor supports it.
+
+## Snippet completions
+
+When `enable_snippets` is `true` (the default) and the client announces snippet support, ZLS inserts tab-stop placeholders for function calls and common statement forms.
+
+```json
+{
+  "enable_snippets": true
+}
+```
+
+For a function call, the snippet expands to `functionName(${1:})` so your cursor lands inside the parentheses. If `enable_argument_placeholders` is also enabled, each parameter gets its own placeholder: `functionName(${1:param1}, ${2:param2})`.
+
+## Argument placeholders
+
+```json
+{
+  "enable_argument_placeholders": true
+}
+```
+
+When `enable_argument_placeholders` is `true` (the default), function completions fill in named placeholders for every parameter:
+
+```zig
+// completing `std.mem.eql` produces:
+std.mem.eql(${1:comptime T: type}, ${2:a: []const T}, ${3:b: []const T})
+```
+
+Set this to `false` if you prefer a single cursor stop inside the parentheses.
+
+## Completion label details
+
+```json
+{
+  "completion_label_details": true
+}
+```
+
+When `completion_label_details` is `true` (the default), the function signature appears as a secondary label in the completion pop-up — the parameter list on the left and the return type on the right. Some editors display this inline; others show it in a separate column.
+
+Setting it to `false` collapses the label to just the function name, which can reduce visual noise in editors with limited pop-up space.
+
+## Signature help
+
+As you type arguments inside a function call, ZLS sends signature help information — the full function signature with the current parameter highlighted. This is separate from completions and works continuously as you move between arguments.
+
+<Note>
+Signature help is provided by the `textDocument/signatureHelp` LSP request. Most editors display it as a floating tooltip above or below the current line.
+</Note>

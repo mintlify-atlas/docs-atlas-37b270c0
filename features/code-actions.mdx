@@ -1,0 +1,68 @@
+---
+title: "Code actions, quick fixes, and source.fixAll in ZLS"
+description: "ZLS provides code actions to fix unused variables, organize imports, rename functions, and convert string literals — with optional auto-fix on save."
+---
+
+Code actions are editor commands that ZLS makes available in response to diagnostics or cursor context. You invoke them through your editor's lightbulb menu or a keybinding, and ZLS returns a workspace edit that your editor applies. ZLS also supports the `source.fixAll` code action kind, which collects every auto-fixable diagnostic in a file and applies them all at once.
+
+## Available code actions
+
+ZLS provides the following code action kinds:
+
+<CardGroup cols={2}>
+  <Card title="Quick fix" icon="wrench">
+    Targeted fixes for a specific diagnostic:
+    - Discard an unused variable or constant (`_ = name; // autofix`)
+    - Discard an unused function parameter
+    - Remove a pointless discard (`_ = x;` with no effect)
+    - Discard or remove an unused capture
+    - Change a `var` that is never mutated to `const`
+    - Rename a non-camelCase function to camelCase
+  </Card>
+  <Card title="Refactor" icon="arrow-right-arrow-left">
+    Transform code without changing behavior:
+    - Convert a string literal to a multiline string literal (`\\`)
+    - Convert a multiline string literal to a regular string literal
+  </Card>
+  <Card title="Organize imports" icon="list">
+    Sort and group all `@import` declarations at the top of the file. Imports are grouped by kind: `std`, `builtin`, `build_options`, packages, and local files — with a blank line between groups.
+  </Card>
+  <Card title="Fix all" icon="check-double">
+    Apply every auto-fixable diagnostic in the file in one operation. This is the `source.fixAll` code action kind that editors can trigger on save.
+  </Card>
+</CardGroup>
+
+## Triggering code actions
+
+Code actions are available in two ways:
+
+1. **On demand** — place your cursor on or near a diagnostic, then use your editor's code action keybinding (often `Ctrl+.` or a lightbulb click). ZLS returns all applicable actions for that position.
+2. **On save via `source.fixAll`** — if your editor supports running `source.fixAll` code actions on save (VS Code does this natively with `"editor.codeActionsOnSave": { "source.fixAll": "explicit" }`), ZLS will apply all auto-fixable diagnostics automatically when you save.
+
+## `force_autofix`
+
+```json
+{
+  "force_autofix": false
+}
+```
+
+`force_autofix` is `false` by default. When `false`, ZLS relies on the editor to trigger `source.fixAll` on save using the standard LSP code-action mechanism.
+
+Set `force_autofix` to `true` only if your editor does not support `source.fixAll` code actions on save natively. When enabled, ZLS applies all fixable diagnostics automatically on every save event, bypassing the normal code action flow.
+
+<Warning>
+The ZLS source explicitly notes that `force_autofix` may deliver a substandard user experience. Prefer your editor's native code actions on save mechanism when it is available. Check your editor's installation guide before enabling this option.
+</Warning>
+
+## Auto-discard markers
+
+When ZLS inserts a discard for an unused variable, it appends an `// autofix` comment:
+
+```zig
+fn example(value: u32) void {
+    _ = value; // autofix
+}
+```
+
+The `// autofix` comment marks the discard as machine-generated. If the variable is later used, ZLS detects the now-pointless discard and offers a "remove pointless discard" quick fix to clean it up.

@@ -1,0 +1,87 @@
+---
+title: "Goto definition, find references, and rename in ZLS"
+description: "ZLS supports goto definition, find all references, rename symbol, hover documentation, and symbol search across files and the whole project."
+---
+
+ZLS implements the full suite of LSP navigation features. You can jump to definitions, trace all uses of a symbol, rename identifiers project-wide, and browse a file or workspace outline — all without leaving your editor.
+
+## Goto definition
+
+**Request:** `textDocument/definition`
+
+Jump to the location where a symbol is defined. Works for:
+
+- Local variables and constants
+- Function declarations
+- Types (structs, enums, unions, error sets)
+- Struct fields and enum members
+- Labels
+- `@import("...")` paths — opens the imported file
+- `@embedFile("...")` paths — opens the embedded file
+- `@cInclude("...")` paths — opens the C header
+
+ZLS also handles `@This()` — jumping to definition on `@This` navigates to the enclosing container declaration.
+
+## Goto declaration
+
+**Request:** `textDocument/declaration`
+
+Similar to goto definition, but navigates to the symbol's *declaration* rather than its resolved definition. For most Zig symbols these are the same location. The distinction applies when a symbol resolves through an alias or comptime indirection.
+
+## Goto type definition
+
+**Request:** `textDocument/typeDefinition`
+
+Jumps to the type of a symbol rather than the symbol itself. For example, placing the cursor on a variable and using goto type definition navigates to the `struct`, `enum`, or other type that the variable holds. ZLS unwraps optional and error union types before resolving, so the destination is always a concrete type declaration.
+
+## Find all references
+
+**Request:** `textDocument/references`
+
+Lists every location in the project where a symbol is used. Results include the declaration site itself when the editor requests it.
+
+```json
+{
+  "skip_std_references": false
+}
+```
+
+Set `skip_std_references` to `true` to exclude the Zig standard library from reference searches. This speeds up lookups for symbols in your own code, since ZLS will not scan the stdlib source tree. Goto definition and rename continue to work across stdlib regardless of this setting.
+
+## Rename symbol
+
+**Request:** `textDocument/rename`
+
+Renames a symbol and every reference to it in a single workspace edit. ZLS collects all references using the same engine as find all references, then returns a `WorkspaceEdit` that your editor applies atomically.
+
+<Warning>
+Rename applies to the Zig source files ZLS has loaded. Files that are not part of the current build graph may be missed. Review the diff in your editor before committing a rename.
+</Warning>
+
+## Hover documentation
+
+**Request:** `textDocument/hover`
+
+Hovering over a symbol shows:
+
+- The symbol's **type** in a Zig code block
+- **Doc comments** attached to the declaration and, when available, to the resolved type
+- The **value** of comptime constants
+
+For builtin functions, hover shows the full signature and the official documentation string from the Zig language reference.
+
+## Document symbols
+
+**Request:** `textDocument/documentSymbol`
+
+Returns an outline of all top-level and nested declarations in the current file: functions, types, constants, variables, and test blocks. Editors use this for breadcrumb navigation, symbol pickers (`@` in the command palette), and code folding.
+
+## Workspace symbols
+
+**Request:** `workspace/symbol`
+
+Searches for symbols by name across all files in the project. Type a query in your editor's workspace symbol picker and ZLS returns matching declarations from every loaded source file.
+
+<Tip>
+Workspace symbol search uses a prefix or substring match depending on the editor. In VS Code, open the command palette and type `#` followed by the symbol name.
+</Tip>

@@ -1,0 +1,70 @@
+---
+title: "Contribute to ZLS: build from source and submit PRs"
+description: "How to build ZLS from source, run the test suite, match the required Zig version, and submit pull requests to the zigtools/zls repository."
+---
+
+ZLS is open source under the MIT license and welcomes contributions. Whether you're fixing a bug, improving an LSP feature, or adding documentation, the process is the same: build from source, write a test, open a pull request.
+
+## Building from source
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/zigtools/zls
+    cd zls
+    ```
+  </Step>
+  <Step title="Build ZLS">
+    ```bash
+    zig build
+    ```
+
+    The compiled binary is written to `zig-out/bin/zls`.
+  </Step>
+</Steps>
+
+<Warning>ZLS targets the Zig master branch. Before building, make sure your installed Zig version is at or above the `minimum_zig_version` declared in `build.zig.zon`. The minimum *runtime* version (the Zig used to compile user projects) is tracked separately in `build.zig` as `minimum_runtime_zig_version`.</Warning>
+
+## Running the tests
+
+Run the full test suite:
+
+```bash
+zig build test
+```
+
+Run only tests whose name contains a keyword:
+
+```bash
+zig build test -Dtest-filter="completion"
+```
+
+Use filters to iterate quickly on a specific feature — for example, `"hover"`, `"goto"`, or `"rename"`.
+
+## Dogfooding
+
+The ZLS team uses ZLS to develop ZLS. Point your editor at the binary you just built (`zig-out/bin/zls`) to get live feedback while making changes.
+
+## Submitting changes
+
+1. Fork [zigtools/zls](https://github.com/zigtools/zls) on GitHub.
+2. Create a branch for your change.
+3. Add or update tests to cover your change.
+4. Open a pull request against the `master` branch.
+
+Keep pull requests focused: one logical change per PR makes review faster.
+
+## Getting help
+
+<CardGroup cols={2}>
+  <Card title="Discord" icon="discord" href="https://discord.gg/5m5U3qpUhk">
+    Chat with the ZLS team and community. Good for questions, design discussions, and getting feedback before opening a PR.
+  </Card>
+  <Card title="GitHub Issues" icon="github" href="https://github.com/zigtools/zls/issues">
+    Report bugs or request features. Search existing issues before opening a new one.
+  </Card>
+</CardGroup>
+
+## Financial support
+
+ZLS is maintained by volunteers. If ZLS saves you time, consider supporting the project on [OpenCollective](https://opencollective.com/zigtools).

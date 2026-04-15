@@ -1,0 +1,51 @@
+---
+title: "What is ZLS? Zig Language Server features and status"
+description: "ZLS is a community-built LSP server for Zig that brings completions, goto definition, diagnostics, inlay hints, and more to any LSP-capable editor."
+---
+
+ZLS is a non-official implementation of the [Language Server Protocol](https://microsoft.github.io/language-server-protocol/) for [Zig](https://ziglang.org/), written in Zig itself. It acts as a bridge between your editor and the Zig compiler toolchain, giving you rich IDE features without being tied to any single editor. ZLS is widely used across the Zig community and supports most language features you'd expect from a modern language server.
+
+## What ZLS does
+
+ZLS speaks LSP, so any editor with an LSP client can use it. Once connected, it provides the following features:
+
+- **Completions** — context-aware suggestions as you type, including builtins, symbols, and fields
+- **Hover** — inline documentation and type information on demand
+- **Go to definition / declaration** — jump to where a symbol is defined
+- **Document symbols** — outline of all symbols in the current file
+- **Find references** — locate every usage of a symbol across your project
+- **Rename symbol** — safely rename a symbol project-wide
+- **Formatting** — formats your code using `zig fmt`, the official Zig formatter
+- **Semantic token highlighting** — accurate syntax highlighting based on type analysis
+- **Inlay hints** — inline annotations showing inferred types and parameter names
+- **Code actions** — quick fixes and refactoring suggestions
+- **Selection ranges** — smart expand/shrink selection
+- **Folding regions** — collapse functions, blocks, and other regions
+
+Support for comptime and full semantic analysis is still a work-in-progress. ZLS handles the common cases well, including type function support, `using` namespace, payload capture type resolution, custom packages, and `cImport`.
+
+## Version compatibility
+
+<Warning>
+  ZLS must be built with and run against the same version of Zig. A mismatch between ZLS and Zig versions will cause degraded behavior or startup failures. When you upgrade Zig, upgrade ZLS at the same time.
+</Warning>
+
+ZLS follows Zig's release cadence. There are tagged releases that correspond to stable Zig releases, and a `master` branch that targets the latest Zig nightly. Pick the ZLS version that matches your installed Zig version.
+
+## Official status
+
+ZLS is **not** an official Ziglang project. It is developed and maintained by the open-source [zigtools](https://github.com/zigtools) community. Despite being non-official, it is the de-facto standard language server for Zig and is widely used in production workflows.
+
+## Next steps
+
+<CardGroup cols={3}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install a prebuilt binary or build ZLS from source.
+  </Card>
+  <Card title="Editor setup" icon="pencil" href="/editor-setup">
+    Connect ZLS to VS Code, Neovim, Helix, and more.
+  </Card>
+  <Card title="Configuration" icon="sliders" href="/guides/configuration">
+    Customize ZLS behavior with a zls.json config file.
+  </Card>
+</CardGroup>

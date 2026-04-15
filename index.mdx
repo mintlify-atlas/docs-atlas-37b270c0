@@ -1,97 +1,67 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "ZLS: Zig Language Server with IDE features for Zig"
+description: "ZLS brings IDE-quality features to Zig development — autocompletion, goto definition, diagnostics, and more via the Language Server Protocol."
 ---
 
-## Setting up
+ZLS is a non-official Language Server Protocol (LSP) implementation for Zig, written in Zig itself. It connects to any LSP-compatible editor — VS Code, Neovim, Helix, Zed, and many more — to provide rich IDE features like autocompletion, goto definition, hover documentation, and real-time diagnostics powered by Zig's own compiler.
 
-Get your documentation site up and running in minutes.
-
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
-
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Installation" icon="download" href="/installation">
+    Install ZLS from prebuilt binaries or build from source, then connect it to your editor.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="Editor Setup" icon="pen-to-square" href="/editor-setup">
+    Configure your preferred editor to use ZLS — VS Code, Neovim, Helix, Zed, and more.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="Configuration" icon="sliders" href="/guides/configuration">
+    Customize ZLS behavior with a `zls.json` file — completions, diagnostics, inlay hints, and more.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="CLI Reference" icon="terminal" href="/reference/cli">
+    Full reference for ZLS command-line flags including `--config-path`, `--log-level`, and `env`.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## Features at a glance
 
-Everything you need to create world-class documentation.
+ZLS implements the core LSP features that make Zig development faster and less error-prone:
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
+<CardGroup cols={3}>
+  <Card title="Completions" icon="wand-magic-sparkles" href="/features/completions">
+    Smart autocompletion with snippets, argument placeholders, and function signatures.
   </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
+  <Card title="Diagnostics" icon="triangle-exclamation" href="/features/diagnostics">
+    Inline errors and warnings via `zig ast-check` and optional build-on-save.
   </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
+  <Card title="Navigation" icon="arrow-right-arrow-left" href="/features/navigation">
+    Goto definition, find all references, and rename symbol across your project.
   </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
+  <Card title="Hover" icon="circle-info" href="/features/navigation">
+    Inline documentation for functions, types, and builtins on hover.
   </Card>
-</Columns>
+  <Card title="Semantic tokens" icon="palette" href="/features/semantic-tokens">
+    Semantic syntax highlighting that understands Zig's type system.
+  </Card>
+  <Card title="Inlay hints" icon="eye" href="/features/inlay-hints">
+    Inline type and parameter name hints to clarify code without cluttering it.
+  </Card>
+</CardGroup>
 
-## Need inspiration?
+## Get up and running
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+<Steps>
+  <Step title="Install ZLS">
+    Download a prebuilt binary matching your Zig version from the [ZLS releases page](https://github.com/zigtools/zls/releases), or build from source with `zig build -Doptimize=ReleaseSafe`. See the [installation guide](/installation) for all options.
+  </Step>
+  <Step title="Connect to your editor">
+    Follow the [editor setup guide](/editor-setup) for your editor. Most editors need only a path to the `zls` binary and the LSP client enabled.
+  </Step>
+  <Step title="Configure (optional)">
+    Create a `zls.json` in your config directory to tune completions, diagnostics, and inlay hints. See the [configuration guide](/guides/configuration) or the full [configuration reference](/reference/configuration).
+  </Step>
+  <Step title="Start coding">
+    Open a Zig file and ZLS will start automatically. Trigger completions, hover over symbols, and navigate your project with full IDE support.
+  </Step>
+</Steps>
+
+<Note>
+  ZLS version must match your Zig version. If you upgrade Zig, upgrade ZLS at the same time. The `main` branch of ZLS tracks Zig `master`.
+</Note>

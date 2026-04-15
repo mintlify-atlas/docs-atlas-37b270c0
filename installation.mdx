@@ -1,0 +1,85 @@
+---
+title: "Install ZLS: prebuilt binaries and build from source"
+description: "Install ZLS using a prebuilt binary for your platform or build it from source with Zig. Covers supported platforms and post-install verification."
+---
+
+ZLS is a standalone binary that you place somewhere on your `PATH`. There are two ways to get it: download a prebuilt binary from GitHub Releases, or compile it yourself from source. Both paths end with the same `zls` executable.
+
+## Prerequisites
+
+You must have [Zig](https://ziglang.org/download/) installed and available on your `PATH` before using ZLS. ZLS depends on the Zig compiler at runtime to provide diagnostics and formatting.
+
+<Warning>
+  ZLS must match your installed Zig version. If you upgrade Zig, you must also upgrade ZLS. Running a mismatched pair will cause incorrect behavior.
+</Warning>
+
+## Option 1: Prebuilt binary
+
+Prebuilt binaries are available for every supported platform on the [ZLS releases page](https://github.com/zigtools/zls/releases).
+
+<Steps>
+  <Step title="Find the release that matches your Zig version">
+    On the releases page, each ZLS release is tagged with the Zig version it was built for. Download the release whose tag matches the output of `zig version`.
+  </Step>
+  <Step title="Download the archive for your platform">
+    Pick the archive that matches your CPU architecture and operating system. See the [supported platforms](#supported-platforms) table below for the full list.
+  </Step>
+  <Step title="Extract and place the binary on your PATH">
+    Extract the archive and move the `zls` binary (or `zls.exe` on Windows) to a directory that is already on your `PATH`, such as `~/.local/bin` on Linux/macOS or `C:\Users\<you>\bin` on Windows.
+  </Step>
+</Steps>
+
+## Option 2: Build from source
+
+Building from source gives you full control over the build and lets you track the `master` branch for nightly Zig compatibility.
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/zigtools/zls
+    cd zls
+    ```
+  </Step>
+  <Step title="Build with ReleaseSafe">
+    ```bash
+    zig build -Doptimize=ReleaseSafe
+    ```
+
+    The build will fail at compile time if your Zig version does not meet the minimum required version. If that happens, either upgrade Zig or check out an older ZLS tag.
+  </Step>
+  <Step title="Locate the output binary">
+    The compiled binary is written to `zig-out/bin/zls` (or `zig-out/bin/zls.exe` on Windows). Copy or symlink it to a directory on your `PATH`.
+  </Step>
+</Steps>
+
+## Supported platforms
+
+The following platforms have prebuilt binaries available on every release:
+
+| Architecture | Linux | macOS | Windows | WASI |
+|---|---|---|---|---|
+| `x86_64` | yes | yes | yes | — |
+| `x86` (32-bit) | yes | — | yes | — |
+| `aarch64` | yes | yes | yes | — |
+| `arm` | yes | — | — | — |
+| `riscv64` | yes | — | — | — |
+| `loongarch64` | yes | — | — | — |
+| `wasm32` | — | — | — | yes |
+
+<Note>
+  Tagged (stable) releases also include prebuilt binaries for `powerpc64le-linux` and `s390x-linux`.
+</Note>
+
+## Verify the installation
+
+After placing the binary on your `PATH`, confirm it works:
+
+```bash
+zls --version
+```
+
+You should see a version string such as `0.14.0` or `0.16.0-dev.123+abc1234`. If the command is not found, double-check that the directory containing `zls` is in your `PATH`.
+
+<Tip>
+  Run `zls env` to see the resolved config path, log path, and version information all at once. This is useful for debugging editor integration issues.
+</Tip>

@@ -1,0 +1,70 @@
+---
+title: "zls.json: config file format, location, and schema"
+description: "How to write a zls.json configuration file for ZLS: file locations, a full working example, JSON schema support, and per-project overrides."
+---
+
+`zls.json` is the configuration file for ZLS. ZLS loads it once at startup and uses the values to control completions, diagnostics, inlay hints, and more. Every key in the file corresponds to an option documented in the [configuration reference](/reference/configuration).
+
+## File locations
+
+ZLS searches for `zls.json` in the following order and loads the first file it finds:
+
+1. **Local (user) config directory** — for example, `~/.config/zls/zls.json` on Linux or `%APPDATA%\zls\zls.json` on Windows.
+2. **Global config directory** — for example, `/etc/xdg/zls/zls.json` on Linux.
+
+Run `zls env` to see the exact paths ZLS uses on your system:
+
+```bash
+zls env
+```
+
+The output includes `local_config_dir`, `global_config_dir`, and `config_file` (the path to whichever file was actually loaded). See the [env reference](/reference/env) for field details.
+
+## Full example
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/zigtools/zls/master/schema.json",
+  "zig_exe_path": "/usr/local/bin/zig",
+  "enable_snippets": true,
+  "enable_argument_placeholders": true,
+  "enable_build_on_save": true,
+  "semantic_tokens": "full",
+  "inlay_hints_show_variable_type_hints": true,
+  "inlay_hints_show_parameter_name": true,
+  "warn_style": false,
+  "skip_std_references": false
+}
+```
+
+## Specifying a custom path
+
+If you want to keep your config file in a non-standard location, pass its path at startup:
+
+```bash
+zls --config-path /path/to/zls.json
+```
+
+This overrides the automatic search described above.
+
+## JSON schema
+
+ZLS ships a JSON schema at:
+
+```
+https://raw.githubusercontent.com/zigtools/zls/master/schema.json
+```
+
+Adding the `$schema` field to your `zls.json` enables autocompletion and validation of config keys in editors that support JSON Schema (VS Code, Neovim with `jsonls`, and others):
+
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/zigtools/zls/master/schema.json"
+}
+```
+
+<Tip>Most editors will validate key names and types automatically once the `$schema` field is present, catching typos before you restart ZLS.</Tip>
+
+## All available options
+
+See the [configuration reference](/reference/configuration) for the complete list of options with their types, defaults, and descriptions.

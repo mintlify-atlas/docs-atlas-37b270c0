@@ -1,0 +1,70 @@
+---
+title: "Error diagnostics in ZLS: ast-check and build-on-save"
+description: "ZLS surfaces Zig compiler errors and style warnings inline in your editor using zig ast-check for instant feedback and optional build-on-save."
+---
+
+ZLS publishes diagnostics whenever you open or edit a Zig file. Errors and warnings appear as inline squiggles in your editor without you having to run a build manually. ZLS uses two independent diagnostic sources: a fast syntax checker and an optional full-compile build-on-save pass.
+
+## Diagnostic sources
+
+### `zig ast-check`
+
+The primary diagnostic source is `zig ast-check`, which checks syntax and generates ZIR (Zig Intermediate Representation) without performing a full compilation. This catches:
+
+- Parse errors (missing braces, invalid syntax)
+- Unused variables and function parameters
+- Undeclared identifiers
+- Type errors that are visible from AST analysis alone
+
+Because it operates on a single file without linking, `zig ast-check` is fast enough to run on every keystroke.
+
+```json
+{
+  "prefer_ast_check_as_child_process": true
+}
+```
+
+When `prefer_ast_check_as_child_process` is `true` (the default), ZLS runs `zig ast-check` as a subprocess piped through stdin. This uses the exact same checker as the Zig compiler. If set to `false` or if `zig_exe_path` is unset, ZLS falls back to an internal ASTGen pass that produces equivalent results without spawning a process.
+
+### Build-on-save
+
+Build-on-save runs `zig build` in watch mode and streams diagnostics from the full compile back to your editor. It catches errors that `ast-check` cannot — cross-file type mismatches, missing symbols in other translation units, linker errors, and errors in dependencies.
+
+See the [Build-On-Save guide](/guides/build-on-save) for setup instructions.
+
+## Style warnings
+
+```json
+{
+  "warn_style": false
+}
+```
+
+When `warn_style` is `true`, ZLS adds hint-severity diagnostics for Zig naming convention violations at the root scope:
+
+- Functions should be `camelCase`
+- Type functions (functions that return a type) should be `PascalCase`
+- `@import` paths should not start with `./`
+
+These appear as hints, not errors, so they do not block compilation.
+
+## Global variable highlighting
+
+```json
+{
+  "highlight_global_var_declarations": false
+}
+```
+
+When `highlight_global_var_declarations` is `true`, ZLS adds a hint diagnostic on every `var` declaration at file scope. Global mutable state is generally discouraged in Zig; this option makes it visible at a glance.
+
+## When diagnostics appear
+
+ZLS publishes diagnostics in two situations:
+
+1. **On file open and edit** — `zig ast-check` runs immediately and sends results to the editor. Most editors display these inline as you type.
+2. **On save (build-on-save only)** — the build watcher detects the file change and triggers a rebuild. Full-compile diagnostics arrive a few seconds later depending on project size.
+
+<Note>
+Both diagnostic sources are additive. You can have `zig ast-check` diagnostics and build-on-save diagnostics active at the same time. Build-on-save diagnostics are cleared and replaced on every successful build cycle.
+</Note>

@@ -1,0 +1,106 @@
+---
+title: "ZLS CLI: complete reference for commands and flags"
+description: "All ZLS commands and flags: start the server, inspect environment info, override the config path and log file, and control log verbosity."
+---
+
+ZLS is primarily an LSP server, not a traditional CLI tool. When you invoke `zls` without arguments it starts the server and communicates over stdin/stdout using JSON-RPC. Your editor manages this process automatically. Direct invocation is useful for configuration, debugging, and tooling integration.
+
+## Commands
+
+### `zls`
+
+Start the ZLS language server. The server reads LSP messages from stdin and writes responses to stdout. Your editor or LSP client launches this process and manages the connection.
+
+```bash
+zls
+```
+
+### `zls help`
+
+Print usage information and exit.
+
+```bash
+zls help
+zls --help
+zls -h
+```
+
+### `zls version`
+
+Print the ZLS version string and exit.
+
+```bash
+zls version
+zls --version
+```
+
+### `zls env`
+
+Print a JSON object with runtime environment information — the ZLS version, cache directory, config directories, which config file was loaded, and the log file path. Useful for diagnosing configuration problems.
+
+```bash
+zls env
+```
+
+See the [env reference](/reference/env) for a full description of every field in the output.
+
+## Flags
+
+Flags can be combined with any command or used when starting the server.
+
+### `--config-path [path]`
+
+Override the path to the `zls.json` configuration file. When set, ZLS skips its normal config file search and loads this file instead.
+
+```bash
+zls --config-path /path/to/zls.json
+```
+
+### `--log-file [path]`
+
+Override the path to the log file. By default ZLS writes logs to `{cache}/zls/zls.log`.
+
+```bash
+zls --log-file /tmp/zls-debug.log
+```
+
+### `--log-level [level]`
+
+Set the minimum log level. Messages below this level are suppressed.
+
+| Value   | Description                            |
+| ------- | -------------------------------------- |
+| `err`   | Errors only                            |
+| `warn`  | Warnings and errors                    |
+| `info`  | Informational messages (default)       |
+| `debug` | Verbose output including internal state |
+
+```bash
+zls --log-level debug
+```
+
+### `--enable-stderr-logs`
+
+Write log messages to stderr in addition to the log file. Useful when you want to observe ZLS output in a terminal while an editor is connected.
+
+```bash
+zls --enable-stderr-logs
+```
+
+### `--disable-lsp-logs`
+
+Disable `window/logMessage` LSP notifications. Log messages still go to the log file and stderr (if `--enable-stderr-logs` is set), but the editor's LSP log panel will not receive them.
+
+```bash
+zls --disable-lsp-logs
+```
+
+## Combining flags
+
+Flags compose freely. For example, to start ZLS with a custom config file, verbose logging, and stderr output:
+
+```bash
+zls --config-path ~/my-zls.json --log-level debug --enable-stderr-logs
+```
+
+<Note>ZLS communicates over stdin/stdout, so running it directly in a terminal produces raw LSP JSON-RPC output. Use `zls env` or `zls version` for human-readable output.</Note>

@@ -1,0 +1,165 @@
+---
+title: "Diagnose and fix common ZLS configuration problems"
+description: "Common ZLS problems and how to fix them — ZLS not starting, missing completions, slow performance, version mismatches, and config not loading."
+---
+
+If ZLS is not behaving as expected, start by running `zls env` to see what ZLS knows about its environment — the config file it loaded, the log file path, and the version. Most issues fall into one of the categories below.
+
+<AccordionGroup>
+  <Accordion title="ZLS not starting or not found">
+    If your editor reports that it cannot find or start ZLS:
+
+    1. Verify ZLS is on your `PATH`:
+       ```bash
+       zls --version
+       ```
+       If this fails, ZLS is not installed or not on `PATH`. Add the directory containing the `zls` binary to your `PATH`, or configure your editor's LSP client with the full path to the executable.
+
+    2. Check your editor's LSP logs. Most editors expose a log output panel or file where language server startup errors appear. Look for messages about the `zls` process failing to start or producing unexpected output.
+
+    3. Make sure you are not running ZLS directly in a terminal — it communicates over stdin/stdout using the Language Server Protocol, not as a CLI tool. Your editor's LSP client starts and manages the ZLS process.
+  </Accordion>
+
+  <Accordion title="Version mismatch errors">
+    ZLS and Zig must be the same version. A mismatch between the two produces errors like undefined symbols, parse failures, or unexpected behavior during startup.
+
+    Check both versions:
+    ```bash
+    zig version
+    zls --version
+    ```
+
+    Both should report the same `MAJOR.MINOR.PATCH`. If they differ, update them together. The easiest approach is to use a version manager like [`zigup`](https://github.com/marler8997/zigup) or [`zvm`](https://github.com/tristanisham/zvm) that manages both.
+
+    <Warning>
+    There is no compatibility layer between ZLS versions and Zig versions. Always keep them in sync.
+    </Warning>
+  </Accordion>
+
+  <Accordion title="No completions or completions not working">
+    If ZLS is running but completions are not appearing:
+
+    1. Confirm the LSP client is connected. Check your editor's LSP status indicator or output panel to see if ZLS reports as active for the current file.
+
+    2. Ensure your workspace has a `build.zig` at the root. ZLS uses the build system to resolve imports and dependencies. Without `build.zig`, ZLS may not be able to resolve symbols across files.
+
+    3. Completions for standard library symbols require ZLS to locate your Zig installation. Run `zls env` and check that `zig_exe_path` is set, or verify that `zig` is available on `PATH`.
+
+    4. Some editors require you to explicitly trigger completions (e.g., `Ctrl+Space`). Check whether auto-trigger is configured in your editor's LSP settings.
+  </Accordion>
+
+  <Accordion title="Slow completions or high CPU usage">
+    ZLS can be CPU-intensive when resolving references across large codebases or the standard library. A few options reduce load:
+
+    **Skip standard library references**
+
+    Set `skip_std_references` to avoid searching the standard library when looking up references. Go-to-definition and rename still work; only cross-file reference lookups are skipped:
+
+    ```json
+    {
+      "skip_std_references": true
+    }
+    ```
+
+    **Reduce semantic token coverage**
+
+    Semantic tokens require a full analysis pass. Switching from `"full"` to `"partial"` or `"none"` reduces work on every keystroke:
+
+    ```json
+    {
+      "semantic_tokens": "partial"
+    }
+    ```
+
+    **Check for runaway build-on-save**
+
+    If `zig build` is the source of high CPU, add a `check` step to `build.zig` that avoids generating artifacts, or pass targeted build arguments via `build_on_save_args` to limit the scope of the build.
+  </Accordion>
+
+  <Accordion title="Build-on-save not working">
+    If build-on-save is enabled but you are not seeing build diagnostics:
+
+    1. Check that `enable_build_on_save` is `true` in `zls.json`, or add a `check` step to `build.zig`:
+       ```zig
+       const exe_check = b.addExecutable(.{
+           .name = "my_app",
+           .root_source_file = b.path("src/main.zig"),
+           .target = target,
+           .optimize = optimize,
+       });
+       const check = b.step("check", "Check if the app compiles");
+       check.dependOn(&exe_check.step);
+       ```
+
+    2. Verify that `zig build check` runs successfully from the workspace root on the command line. If it fails with a configuration error, ZLS will not be able to run it either.
+
+    3. Make sure ZLS can find the `zig` executable. Run `zls env` and check `zig_exe_path`, or confirm that `zig` is on `PATH`.
+
+    4. Check the ZLS log file (see "Viewing ZLS logs" below) for errors from the build-on-save process.
+  </Accordion>
+
+  <Accordion title="Viewing ZLS logs">
+    ZLS writes log output to a file by default. Run `zls env` to find the path:
+
+    ```bash
+    zls env
+    ```
+
+    The `log_file` field shows the current log file location. Open it to inspect warnings and errors from the running ZLS session.
+
+    **Increase log verbosity**
+
+    Pass `--log-level debug` to get verbose output:
+
+    ```bash
+    zls --log-level debug
+    ```
+
+    **Write logs to stderr**
+
+    Some editors let you capture stderr from language server processes. Pass `--enable-stderr-logs` to write log messages to stderr in addition to the log file:
+
+    ```bash
+    zls --enable-stderr-logs
+    ```
+
+    **Disable LSP log messages**
+
+    By default, ZLS also sends log messages to your editor via `window/logMessage`. To suppress these and only log to file or stderr, pass `--disable-lsp-logs`.
+  </Accordion>
+
+  <Accordion title="Config not being loaded">
+    If your `zls.json` settings are not taking effect:
+
+    1. Run `zls env` and check the `config_file` field. If it is `null`, ZLS did not find a config file in either the local or global config directory.
+
+    2. Move your `zls.json` to the path shown in `local_config_dir` or `global_config_dir` in the `zls env` output.
+
+    3. Alternatively, start ZLS with `--config-path` pointing directly at your file:
+       ```bash
+       zls --config-path /path/to/zls.json
+       ```
+
+    4. If `config_file` is set but settings still have no effect, check the ZLS log for JSON parse errors. A syntax error in `zls.json` causes ZLS to skip the file and use defaults.
+  </Accordion>
+
+  <Accordion title="Formatting not working">
+    ZLS delegates formatting to `zig fmt`, which is part of the Zig compiler. If formatting does not work:
+
+    1. Confirm `zig` is on `PATH`:
+       ```bash
+       zig fmt --help
+       ```
+
+    2. If `zig` is not on `PATH`, set `zig_exe_path` in `zls.json`:
+       ```json
+       {
+         "zig_exe_path": "/path/to/zig"
+       }
+       ```
+
+    3. Check whether your editor is configured to use ZLS as the formatter for Zig files, rather than a separate formatter plugin.
+
+    4. Note that `zig fmt` is opinionated and does not support style customization. If it is running but you dislike the output, that is expected behavior.
+  </Accordion>
+</AccordionGroup>

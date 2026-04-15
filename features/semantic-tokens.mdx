@@ -1,0 +1,92 @@
+---
+title: "Semantic token highlighting: beyond grammar in ZLS"
+description: "ZLS provides rich syntax highlighting via semantic tokens, distinguishing types, functions, methods, parameters, and more using Zig type analysis."
+---
+
+Semantic tokens are a layer of syntax highlighting on top of your editor's grammar-based highlighter. While a grammar can only apply color rules based on text patterns, ZLS understands the Zig type system and can assign precise token types to every identifier it resolves. The result is highlighting that reflects what a symbol *is*, not just what it looks like.
+
+## How it works
+
+ZLS walks the AST of every open file and resolves each identifier's type. It then maps each resolved symbol to a standard LSP token type and sends the full token stream to the editor. Your editor's theme maps token types to colors, so the appearance depends on the theme you use.
+
+## Token types
+
+ZLS emits the following semantic token types:
+
+| Token type | Example |
+|---|---|
+| `namespace` | A container used only as a namespace (no fields) |
+| `type` | A type name or type alias |
+| `struct` | A struct type |
+| `enum` | An enum type |
+| `typeParameter` | A `comptime` parameter that accepts a type |
+| `parameter` | A function parameter |
+| `variable` | A local or global variable |
+| `property` | A struct or union field |
+| `enumMember` | An enum field or tagged union variant |
+| `function` | A free function |
+| `method` | A function whose first parameter is the receiver |
+| `keyword` | A language keyword |
+| `comment` | A line comment or doc comment |
+| `string` | A string or character literal |
+| `number` | A numeric literal |
+| `operator` | An operator token |
+| `builtin` | A `@builtin` function |
+| `label` | A block or loop label |
+| `errorTag` | A member of an error set |
+| `keywordLiteral` | `true`, `false`, `null`, `undefined`, `unreachable` |
+
+ZLS also emits token **modifiers** such as `declaration`, `readonly`, `static`, `deprecated`, `generic`, and `mutable` to give themes additional information about each token.
+
+## Configuration
+
+```json
+{
+  "semantic_tokens": "full"
+}
+```
+
+The `semantic_tokens` option controls how much semantic token information ZLS computes:
+
+<Tabs>
+  <Tab title="full (default)">
+    ZLS sends all semantic token information — identifiers, keywords, comments, strings, numbers, operators, and builtins. This gives the richest highlighting but requires resolving the entire file on every change.
+
+    ```json
+    { "semantic_tokens": "full" }
+    ```
+  </Tab>
+  <Tab title="partial">
+    ZLS sends only tokens that require semantic analysis to classify — primarily identifiers, fields, and type names. Tokens that a grammar can already highlight correctly (keywords, strings, numbers, comments) are omitted.
+
+    ```json
+    { "semantic_tokens": "partial" }
+    ```
+
+    Use `partial` in large codebases if the editor feels slow after edits.
+  </Tab>
+  <Tab title="none">
+    Semantic tokens are disabled entirely. Your editor falls back to its built-in Zig grammar for all highlighting.
+
+    ```json
+    { "semantic_tokens": "none" }
+    ```
+  </Tab>
+</Tabs>
+
+## What semantic tokens add over grammar highlighting
+
+A TextMate grammar cannot distinguish the following pairs because the distinction requires type information:
+
+- A function *declaration* vs a function *call*
+- A *method* (receiver-based) vs a plain *function*
+- A *type name* vs a *variable* that holds a value
+- A *generic* function vs a concrete one
+- A `comptime` type parameter vs a regular parameter
+- A *mutable* variable vs an immutable constant
+
+ZLS resolves all of these and assigns the correct token type and modifiers, so your theme can color them differently.
+
+<Tip>
+If your theme does not differentiate between ZLS token types, check whether it has a dedicated Zig semantic token configuration. Many themes treat `method` and `function` identically by default — you can add custom rules in your editor settings to override specific token type colors.
+</Tip>

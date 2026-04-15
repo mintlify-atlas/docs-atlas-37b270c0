@@ -1,0 +1,78 @@
+---
+title: "Enable build-on-save for full compiler diagnostics"
+description: "Configure ZLS to run zig build automatically on save, surfacing full compiler errors and type mismatches as inline diagnostics in your editor."
+---
+
+Build-on-save diagnostics give you full compiler feedback without leaving your editor. When you save a file, ZLS runs `zig build` in the background and reports any errors directly as inline diagnostics — the same errors you would see on the command line, but shown at the relevant line.
+
+## How it works
+
+ZLS watches for file saves and triggers a background `zig build` process when one occurs. The compiler output is parsed and pushed to your editor as LSP diagnostics. This is distinct from the ast-check diagnostics that ZLS always provides:
+
+| Diagnostic source | What it catches |
+|---|---|
+| ast-check | Syntax errors and basic semantic errors, no codegen |
+| Build-on-save | Full compilation errors, including type mismatches, missing symbols, and link errors |
+
+Both run together when build-on-save is active. ast-check results appear immediately as you type; build-on-save results arrive after `zig build` completes.
+
+## Enabling build-on-save
+
+ZLS enables build-on-save automatically when your `build.zig` declares a `check` step. You can also enable it explicitly in `zls.json`.
+
+### Automatic: add a `check` step
+
+The recommended approach is to declare a `check` step in your `build.zig`. ZLS detects this step and enables build-on-save without any additional configuration.
+
+```zig
+const exe_check = b.addExecutable(.{
+    .name = "my_app",
+    .root_source_file = b.path("src/main.zig"),
+    .target = target,
+    .optimize = optimize,
+});
+
+const check = b.step("check", "Check if the app compiles");
+check.dependOn(&exe_check.step);
+```
+
+The `check` step is preferred over the default `install` step because it compiles your code without writing output artifacts to `zig-out/`. This makes the build faster and avoids side effects during editing.
+
+<Note>
+Add every compilation unit you want checked to the `check` step — for example, both your executable and any libraries it depends on. Units not attached to `check` will not produce diagnostics.
+</Note>
+
+### Manual: set `enable_build_on_save` in zls.json
+
+If your `build.zig` does not have a `check` step, you can force build-on-save on by setting `enable_build_on_save` in your `zls.json`:
+
+```json
+{
+  "enable_build_on_save": true
+}
+```
+
+When enabled this way and no `check` step exists, ZLS falls back to the `install` step.
+
+## Passing custom build arguments
+
+Use `build_on_save_args` to pass additional arguments to `zig build` when running diagnostics:
+
+```json
+{
+  "enable_build_on_save": true,
+  "build_on_save_args": ["-Dtarget=aarch64-linux", "-Doptimize=Debug"]
+}
+```
+
+These arguments are appended after the step name. You can use them to set build options, change the target, or pass any other flags that `zig build` accepts.
+
+## Disabling build-on-save
+
+Set `enable_build_on_save` to `false` to disable it even if a `check` step is present:
+
+```json
+{
+  "enable_build_on_save": false
+}
+```

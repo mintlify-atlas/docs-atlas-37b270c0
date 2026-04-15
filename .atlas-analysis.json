@@ -1,0 +1,107 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "ZLS",
+  "projectDescription": "A non-official Language Server Protocol implementation for Zig, providing IDE features like autocompletion, goto definition, hover, diagnostics, and more.",
+  "theme": "luma",
+  "primaryColor": "#F7A41D",
+  "lightColor": "#FFF8E7",
+  "darkColor": "#1A1A2E",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "installation",
+              "editor-setup"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/build-on-save",
+              "guides/configuration",
+              "guides/troubleshooting"
+            ]
+          },
+          {
+            "group": "Features",
+            "pages": [
+              "features/completions",
+              "features/diagnostics",
+              "features/navigation",
+              "features/code-actions",
+              "features/semantic-tokens",
+              "features/inlay-hints"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Reference",
+        "groups": [
+          {
+            "group": "Configuration",
+            "pages": [
+              "reference/configuration",
+              "reference/zls-json"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "reference/cli",
+              "reference/env"
+            ]
+          },
+          {
+            "group": "Development",
+            "pages": [
+              "reference/contributing",
+              "reference/architecture"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Autocompletion with snippet and argument placeholder support",
+    "Goto definition, declaration, and type definition",
+    "Find all references and rename symbol",
+    "Hover documentation with Markdown support",
+    "Semantic token highlighting",
+    "Inlay hints for variable types and parameter names",
+    "Code actions and auto-fix on save",
+    "Build-on-save diagnostics with Zig's build system",
+    "Document symbols and workspace symbol search",
+    "Code folding and selection ranges",
+    "Signature help",
+    "Cross-platform support (Linux, macOS, Windows, WASI)"
+  ],
+  "publicApiSurface": [
+    "zls (binary)",
+    "zls help",
+    "zls version",
+    "zls env",
+    "--config-path [path]",
+    "--log-file [path]",
+    "--log-level [err|warn|info|debug]",
+    "--enable-stderr-logs",
+    "--disable-lsp-logs",
+    "zls.json (configuration file)",
+    "enable_snippets",
+    "enable_argument_placeholders",
+    "enable_build_on_save",
+    "build_on_save_args",
+    "semantic_tokens",
+    "inlay_hints_show_variable_type_hints",
+    "inlay_hints_show_parameter_name",
+    "warn_style",
+    "zig_exe_path",
+    "zig_lib_path"
+  ]
+}
